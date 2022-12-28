@@ -10,11 +10,16 @@ const operation = {
  * True = clear all data.
  * False = Clear non-dsplay data only. */
 function clear(clearEverything) {
-    clearHighlighted();
-    operation.num1 = "";
-    operation.num2 = "";
     operation.operator = "";
+    if (clearEverything == false) {
+        operation.num1 = String(operation.currentValue);
+        operation.num2 = "";
+    }
     if (clearEverything == true) {
+        clearHighlighted();
+        operation.operator = "";
+        operation.num1 = "";
+        operation.num2 = "";
         operation.solution = "";
         operation.currentValue = "";
     }
@@ -72,8 +77,9 @@ function createGrid() {
 }
 
 function setup() {
+    createGrid();
     const display = document.getElementById("display");
-    operation.currentValue = "CALCULATOR";
+    operation.currentValue = "Please enter a number";
     grid.gridBox.addEventListener("click", (e) => {
         // If clicking on container then do nothing.
         if (e.target.id == grid.gridBox.id) {
@@ -97,7 +103,6 @@ function numPress(numPress) {
         operation.num2 += numPress;
         operation.currentValue = operation.num2;
     }
-    console.table(operation);
 }
 
 function handleInput(target) {
@@ -106,16 +111,21 @@ function handleInput(target) {
         case "-":
         case "x":
         case "/":
-            if (!operation.operator) {
-                operation.operator = target.textContent;
-                target.style.backgroundColor = "red";
+            if (operation.operator && operation.num1 && operation.num2) {
+                handleInput({ textContent: "=" });
             }
+            operation.operator = target.textContent;
+            target.style.backgroundColor = "red";
             break;
         case "=":
-            operation.solution = operate();
-            updateDisplay();
-            console.table(operation);
-            clear(false);
+            if (operation.num1 && operation.num2 && operation.operator) {
+                operation.solution = operate();
+                updateDisplay();
+                clear(false);
+            } else {
+                alert("Cannot evaluate this equation, please try again...");
+                clear(true);
+            }
             break;
         case "c":
             clear(true);
@@ -132,12 +142,13 @@ function operate() {
             return add();
         case "-":
             return subtract();
-        case "*":
+        case "x":
             return multiply();
         case "/":
             if (!zeroSafe()) {
                 alert("Division by 0 not possible!");
-                return null;
+                clear(true);
+                return;
             }
             return divide();
     }
@@ -155,30 +166,30 @@ function zeroSafe() {
 /** Returns the sum of two numbers. */
 function add() {
     sum = Number(operation.num1) + Number(operation.num2);
-    operation.currentValue = sum;
+    operation.currentValue = String(sum);
     return sum;
 }
 
 /** Returns the difference of two numbers. */
 function subtract() {
     difference = operation.num1 - operation.num2;
-    operation.currentValue = difference;
+    operation.currentValue = String(difference);
     return difference;
 }
 
 /** Returns the product of two numbers. */
 function multiply() {
     product = operation.num1 * operation.num2;
-    operation.currentValue = product;
+    operation.currentValue = String(product);
     return product;
 }
 
 /** Returns the quotient of two numbers. */
 function divide() {
-    quotient = Math.round((operation.num1 / operation.num2) * 100) / 100;
-    operation.currentValue = quotient;
+    quotient =
+        Math.round((operation.num1 / operation.num2) * 10000000) / 10000000;
+    operation.currentValue = String(quotient);
     return quotient;
 }
 
-createGrid();
 setup();
